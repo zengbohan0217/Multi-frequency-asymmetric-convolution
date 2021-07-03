@@ -26,14 +26,16 @@ class MfA_Conv(nn.Module):
         self.high_stride = high_stride
         self.low_stride = low_stride
         self.basic_stride = basic_stride
+        self.padding_hl, self.padding_hs, self.padding_ll, self.padding_ls = self.count_padding()
         self.Hori_high_conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=(high_S, high_L),
-                                        stride=(high_stride, basic_stride))
+                                        stride=(high_stride, basic_stride), padding=(self.padding_hs, self.padding_hl))
         self.Vert_high_conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=(high_L, high_S),
-                                        stride=(basic_stride, high_stride))
+                                        stride=(basic_stride, high_stride), padding=(self.padding_hl, self.padding_hs))
         self.Hori_low_conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=(low_S, low_L),
-                                       stride=(low_stride, basic_stride))
+                                       stride=(low_stride, basic_stride), padding=(self.padding_ls, self.padding_ll))
         self.Vert_low_conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=(low_L, low_S),
-                                       stride=(low_stride, basic_stride))
+                                       stride=(low_stride, basic_stride), padding=(self.padding_ll, self.padding_ls))
+        self.alpha, self.beta, self.delta, self.gamma = self.get_weight()
 
     def count_padding(self):
         padding_hl = self.high_L // 2
@@ -43,11 +45,18 @@ class MfA_Conv(nn.Module):
         return padding_hl, padding_hs, padding_ll, padding_ls
 
     def get_weight(self):
-        alpha = 0.25
-        beta = 0.25
-        delta = 0.25
-        gamma = 0.25
+        alpha = nn.Parameter(torch.FloatTensor(1))
+        beta = nn.Parameter(torch.FloatTensor(1))
+        delta = nn.Parameter(torch.FloatTensor(1))
+        gamma = nn.Parameter(torch.FloatTensor(1))
         return alpha, beta, delta, gamma
+
+    def forward(self, x):
+        out_Horn_h = self.Hori_high_conv(x)
+        out_Vert_h = self.Vert_high_conv(x)
+        out_Horn_l = self.Hori_low_conv(x)
+        out_Vert_l = self.Vert_low_conv(x)
+        return out_Horn_h, out_Vert_h, out_Horn_l, out_Vert_l
 
 
 
