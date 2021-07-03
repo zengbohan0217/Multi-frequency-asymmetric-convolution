@@ -35,5 +35,29 @@ class ConvBlock(nn.Module):
         x = self.relu_1(x)
         return x
 
+class IndentityBlock(nn.Module):
+    def __init__(self, in_channel, kernels, filters):
+        super(IndentityBlock, self).__init__()
+        high_l, high_s, low_l, low_s = kernels
+        f1, f2, f3 = filters
+        self.stage = nn.Sequential(
+            MfA_Conv(in_channel, f1),
+            nn.BatchNorm2d(f1*4),
+            nn.ReLU(True),
+            MfA_Conv(f1*4, f2, high_L=high_l, high_S=high_s, low_L=low_l, low_S=low_s),
+            nn.BatchNorm2d(f2*4),
+            nn.ReLU(True),
+            MfA_Conv(f2*4, f3),
+            nn.BatchNorm2d(f3*4)
+        )
+        self.relu_1 = nn.ReLU(True)
+
+    def forward(self, x):
+        x_shortcut = x
+        x = self.stage(x)
+        x = x + x_shortcut
+        x = self.relu_1(x)
+        return x
+
 
 
