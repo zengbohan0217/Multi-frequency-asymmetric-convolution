@@ -56,7 +56,12 @@ class MfA_Conv(nn.Module):
         out_Vert_h = self.Vert_high_conv(x)
         out_Horn_l = self.Hori_low_conv(x)
         out_Vert_l = self.Vert_low_conv(x)
-        return out_Horn_h, out_Vert_h, out_Horn_l, out_Vert_l
+        out_hh = self.alpha * out_Vert_h + self.beta * out_Horn_h
+        out_ll = self.delta * out_Vert_l + self.gamma * out_Horn_l
+        out_hl = self.alpha * out_Vert_h + self.gamma * out_Horn_l
+        out_lh = self.delta * out_Vert_l + self.beta * out_Horn_h
+        final_out = torch.cat([out_hh, out_ll, out_hl, out_lh], 1)
+        return final_out
 
 
 
