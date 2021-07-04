@@ -1,3 +1,7 @@
+import logging
+import os
+import time
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -25,6 +29,19 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+rq = time.strftime('%Y%m%d%H%M', time.localtime(time.time()))
+log_path = './Logs/'
+if not os.path.exists(log_path):
+    os.makedirs(log_path)
+log_name = log_path + rq + '.log'
+logfile = log_name
+fh = logging.FileHandler(logfile, mode='w')
+fh.setLevel(logging.DEBUG)  # 输出到file的log等级的开关
+formatter = logging.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 
 # Data
 print('==> Preparing data..')
@@ -113,7 +130,8 @@ def train(epoch):
 
         progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                      % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
-
+    logger.info('train epoch: {epoch: d} | loss: {loss: .4f} | Acc: {Acc: .3f}%%'.format(
+        epoch=epoch, loss=train_loss/(batch_idx+1), Acc=100.*correct/total) )
 
 def test(epoch):
     global best_acc

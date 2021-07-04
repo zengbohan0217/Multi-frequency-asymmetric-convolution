@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 import numpy as np
 
 class MfA_Conv(nn.Module):
@@ -46,10 +47,12 @@ class MfA_Conv(nn.Module):
         return padding_hl, padding_hs, padding_ll, padding_ls
 
     def get_weight(self):
-        alpha = nn.Parameter(torch.FloatTensor(1))
-        beta = nn.Parameter(torch.FloatTensor(1))
-        delta = nn.Parameter(torch.FloatTensor(1))
-        gamma = nn.Parameter(torch.FloatTensor(1))
+        weight = nn.Parameter(torch.FloatTensor(4))
+        weight = F.softmax(weight, dim=0)
+        alpha = weight[0]
+        beta = weight[1]
+        delta = weight[2]
+        gamma = weight[3]
         return alpha, beta, delta, gamma
 
     def forward(self, x):
