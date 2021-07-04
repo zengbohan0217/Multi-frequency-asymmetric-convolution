@@ -3,7 +3,9 @@ import torch.nn.functional as F
 from MfA_Conv import MfA_Conv
 
 class ResBlock(nn.Module):
-    def __init__(self, in_channel, out_channel, stride=1):
+    expansion = 1
+
+    def __init__(self, in_channel, out_channel, stride=1, downsample=None, binary=True):
         super(ResBlock, self).__init__()
         self.left = nn.Sequential(
             MfA_Conv(in_channel, out_channel, high_L=5, high_S=1, low_L=5, low_S=3,
@@ -105,7 +107,7 @@ def resnet18_cifar(pretrained=False, M=1, method='MConv'):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet_cifar(BasicBlock_cifar, [4, 4, 4, 4], M=M, method=method)
+    model = ResNet_cifar(ResBlock, [2, 2, 2, 2], M=M, method=method)
     if pretrained:
         raise ValueError
     return model

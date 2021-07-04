@@ -3,7 +3,8 @@ from torch import nn
 import numpy as np
 
 class MfA_Conv(nn.Module):
-    def __init__(self, in_channels, out_channels, high_L=3, high_S=1, low_L=5, low_S=3, high_stride=1, low_stride=1, basic_stride=1, padding=1):
+    def __init__(self, in_channels, out_channels, high_L=3, high_S=1, low_L=5, low_S=3, high_stride=1, low_stride=1,
+                 basic_stride=1, padding=1, bias=True):
         """
         :param in_channels:
         :param out_channels:
