@@ -11,6 +11,7 @@ import torch.backends.cudnn as cudnn
 import torchvision
 import torchvision.transforms as transforms
 import MfA_ResNet_18_20 as Res_
+import MfA_ResNet_18_reduce as Res_18_down
 
 import os
 import argparse
