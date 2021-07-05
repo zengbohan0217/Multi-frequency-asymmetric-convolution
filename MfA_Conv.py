@@ -48,7 +48,7 @@ class MfA_Conv(nn.Module):
 
     def get_weight(self):
         weight = nn.Parameter(torch.FloatTensor(4))
-        weight = F.softmax(weight, dim=0)
+        weight.data = F.softmax(weight, dim=0)     # attention this weight.data
         alpha = weight[0]
         beta = weight[1]
         delta = weight[2]
@@ -60,14 +60,19 @@ class MfA_Conv(nn.Module):
         out_Vert_h = self.Vert_high_conv(x)
         out_Horn_l = self.Hori_low_conv(x)
         out_Vert_l = self.Vert_low_conv(x)
-        new_alpha, new_beta = self.alpha / (self.alpha + self.beta), self.beta / (self.alpha + self.beta)
-        out_hh = new_alpha * out_Vert_h + new_beta * out_Horn_h
-        new_delta, new_gamma = self.delta / (self.delta + self.gamma), self.gamma / (self.delta + self.gamma)
-        out_ll = new_delta * out_Vert_l + new_gamma * out_Horn_l
-        new_alpha, new_gamma = self.alpha / (self.alpha + self.gamma), self.gamma / (self.alpha + self.gamma)
-        out_hl = new_alpha * out_Vert_h + new_gamma * out_Horn_l
-        new_delta, new_beta = self.delta / (self.delta + self.beta), self.beta / (self.delta + self.beta)
-        out_lh = new_delta * out_Vert_l + new_beta * out_Horn_h
+        # new_alpha, new_beta = self.alpha / (self.alpha + self.beta), self.beta / (self.alpha + self.beta)
+        # out_hh = new_alpha * out_Vert_h + new_beta * out_Horn_h
+        # new_delta, new_gamma = self.delta / (self.delta + self.gamma), self.gamma / (self.delta + self.gamma)
+        # out_ll = new_delta * out_Vert_l + new_gamma * out_Horn_l
+        # new_alpha, new_gamma = self.alpha / (self.alpha + self.gamma), self.gamma / (self.alpha + self.gamma)
+        # out_hl = new_alpha * out_Vert_h + new_gamma * out_Horn_l
+        # new_delta, new_beta = self.delta / (self.delta + self.beta), self.beta / (self.delta + self.beta)
+        # out_lh = new_delta * out_Vert_l + new_beta * out_Horn_h
+
+        out_hh = self.alpha * out_Vert_h + self.beta * out_Horn_h
+        out_ll = self.delta * out_Vert_l + self.gamma * out_Horn_l
+        out_hl = self.alpha * out_Vert_h + self.gamma * out_Horn_l
+        out_lh = self.delta * out_Vert_l + self.beta * out_Horn_h
         final_out = torch.cat([out_hh, out_ll, out_hl, out_lh], 1)
         return final_out
 
