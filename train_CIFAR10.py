@@ -12,6 +12,7 @@ import torchvision
 import torchvision.transforms as transforms
 import MfA_ResNet_18_20 as Res_
 import MfA_ResNet_18_reduce as Res_18_down
+import oct_resnet as octR
 
 import os
 import argparse
@@ -89,7 +90,8 @@ print('==> Building model..')
 # net = RegNetX_200MF()
 # net = SimpleDLA()
 # net = Res_.resnet18_cifar()
-net = Res_18_down.resnet18_cifar()
+# net = Res_18_down.resnet18_cifar()
+net = octR.Octresnet20()
 net = net.to(device)
 if device == 'cuda':
     net = torch.nn.DataParallel(net)
