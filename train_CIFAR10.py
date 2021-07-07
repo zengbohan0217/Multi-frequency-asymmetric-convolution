@@ -10,14 +10,16 @@ import torch.backends.cudnn as cudnn
 
 import torchvision
 import torchvision.transforms as transforms
-import MfA_ResNet_18_20 as Res_
+import MfA_ResNet_18 as Res_
 import MfA_ResNet_18_reduce as Res_18_down
+import ResNet_slim as Res_slim
+import MfA_ResNet_slim as MfA_Res_slim
 import oct_resnet as octR
 
 import os
 import argparse
 
-# from models import *
+from ResNet import *
 from util import progress_bar
 
 
@@ -35,15 +37,24 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 rq = time.strftime('%Y%m%d%H%M', time.localtime(time.time()))
 log_path = './Logs/'
+target_name = 'resnet_20_slim_constant0.5_A'
 if not os.path.exists(log_path):
     os.makedirs(log_path)
-log_name = log_path + rq + '.log'
+log_name = log_path + rq + target_name + '.log'
 logfile = log_name
 fh = logging.FileHandler(logfile, mode='w')
 fh.setLevel(logging.DEBUG)  # 输出到file的log等级的开关
 formatter = logging.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
 fh.setFormatter(formatter)
 logger.addHandler(fh)
+
+# model_path = './checkpoint/ckpt.pth'
+# model_path = './checkpoint/res_18_down_ckpt.pth'
+# model_path = './checkpoint/res_18_basic_ckpt.pth'
+# model_path = './checkpoint/res_18_down_para_ckpt.pth'
+# model_path = './checkpoint/res_18_slim_ckpt.pth'
+model_path = './checkpoint/res_18_slim_B_ckpt.pth'
+# model_path = './checkpoint/octres_20_ckpt.pth'
 
 # Data
 print('==> Preparing data..')
@@ -60,12 +71,12 @@ transform_test = transforms.Compose([
 ])
 
 trainset = torchvision.datasets.CIFAR10(
-    root='./data', train=True, download=True, transform=transform_train)
+    root='/home/xs/data', train=True, download=False, transform=transform_train)
 trainloader = torch.utils.data.DataLoader(
     trainset, batch_size=128, shuffle=True, num_workers=2)
 
 testset = torchvision.datasets.CIFAR10(
-    root='./data', train=False, download=True, transform=transform_test)
+    root='/home/xs/data', train=False, download=False, transform=transform_test)
 testloader = torch.utils.data.DataLoader(
     testset, batch_size=100, shuffle=False, num_workers=2)
 
@@ -90,8 +101,11 @@ print('==> Building model..')
 # net = RegNetX_200MF()
 # net = SimpleDLA()
 # net = Res_.resnet18_cifar()
-# net = Res_18_down.resnet18_cifar()
-net = octR.Octresnet20()
+net = MfA_Res_slim.resnet20()
+# net = octR.Octresnet20()
+
+logger.info(net)
+
 net = net.to(device)
 if device == 'cuda':
     net = torch.nn.DataParallel(net)
@@ -101,7 +115,7 @@ if args.resume:
     # Load checkpoint.
     print('==> Resuming from checkpoint..')
     assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
-    checkpoint = torch.load('./checkpoint/ckpt.pth')
+    checkpoint = torch.load(model_path)
     net.load_state_dict(checkpoint['net'])
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
@@ -110,6 +124,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=args.lr,
                       momentum=0.9, weight_decay=5e-4)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+#scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100, 150], last_epoch=start_epoch-1)
 
 
 # Training
@@ -137,6 +152,7 @@ def train(epoch):
     logger.info('train epoch: {epoch: d} | loss: {loss: .4f} | Acc: {Acc: .3f}%%'.format(
         epoch=epoch, loss=train_loss/(batch_idx+1), Acc=100.*correct/total) )
 
+
 def test(epoch):
     global best_acc
     net.eval()
@@ -156,6 +172,8 @@ def test(epoch):
 
             progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        logger.info('test epoch: {epoch: d} | loss: {loss: .4f} | Acc: {Acc: .3f}%%'.format(
+        epoch=epoch, loss=test_loss/(batch_idx+1), Acc=100.*correct/total) )
 
     # Save checkpoint.
     acc = 100.*correct/total
@@ -168,11 +186,12 @@ def test(epoch):
         }
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/ckpt.pth')
+        torch.save(state, model_path)
         best_acc = acc
+    logger.info("best accuracy: {best_acc: .3f}".format(best_acc=best_acc))
 
 
-for epoch in range(start_epoch, start_epoch+200):
+for epoch in range(start_epoch, start_epoch+300):
     train(epoch)
     test(epoch)
     scheduler.step()
