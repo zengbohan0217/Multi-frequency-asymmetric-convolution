@@ -25,7 +25,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
-from MfA_Conv import MfA_Conv
+from MfA_Conv import MfA_Conv, MfA_Conv_start
 
 from torch.autograd import Variable
 
@@ -54,10 +54,10 @@ class BasicBlock(nn.Module):
     def __init__(self, in_planes, planes, stride=1, option='A'):
         super(BasicBlock, self).__init__()
 
-        self.conv1 = nn.Sequential(MfA_Conv(in_planes, planes, high_L=3, high_S=1, low_L=3, low_S=3,
+        self.conv1 = nn.Sequential(MfA_Conv(in_planes, planes, high_L=3, high_S=1, low_L=5, low_S=3,
                                             high_stride=stride, low_stride=stride, basic_stride=stride), )
         self.bn1 = nn.BatchNorm2d(planes * 4)
-        self.conv2 = nn.Sequential(MfA_Conv(planes * 4, planes, high_L=3, high_S=1, low_L=3, low_S=3), )
+        self.conv2 = nn.Sequential(MfA_Conv(planes * 4, planes, high_L=3, high_S=1, low_L=5, low_S=3), )
         self.bn2 = nn.BatchNorm2d(planes * 4)
 
         self.shortcut = nn.Sequential()
@@ -94,7 +94,7 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         self.in_planes = 16
 
-        self.conv1 = MfA_Conv(3, 4, high_L=3, high_S=1, low_L=3, low_S=3)
+        self.conv1 = MfA_Conv_start(3, 4, high_L=3, high_S=1, low_L=5, low_S=3)
         self.bn1 = nn.BatchNorm2d(16)
         self.layer1 = self._make_layer(block, 4, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 8, num_blocks[1], stride=2)
