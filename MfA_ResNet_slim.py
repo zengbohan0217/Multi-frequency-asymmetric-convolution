@@ -54,10 +54,10 @@ class BasicBlock(nn.Module):
     def __init__(self, in_planes, planes, stride=1, option='A'):
         super(BasicBlock, self).__init__()
 
-        self.conv1 = nn.Sequential(MfA_Conv(in_planes, planes, high_L=3, high_S=1, low_L=5, low_S=3,
+        self.conv1 = nn.Sequential(MfA_Conv(in_planes, planes, high_L=3, high_S=1, low_L=3, low_S=3,
                                             high_stride=stride, low_stride=stride, basic_stride=stride), )
         self.bn1 = nn.BatchNorm2d(planes * 4)
-        self.conv2 = nn.Sequential(MfA_Conv(planes * 4, planes, high_L=3, high_S=1, low_L=5, low_S=3), )
+        self.conv2 = nn.Sequential(MfA_Conv(planes * 4, planes, high_L=3, high_S=1, low_L=3, low_S=3), )
         self.bn2 = nn.BatchNorm2d(planes * 4)
 
         self.shortcut = nn.Sequential()
@@ -94,12 +94,12 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         self.in_planes = 16
 
-        self.conv1 = MfA_Conv_start(3, 4, high_L=3, high_S=1, low_L=5, low_S=3)
+        self.conv1 = MfA_Conv_start(3, 4, high_L=1, high_S=1, low_L=3, low_S=3)
         self.bn1 = nn.BatchNorm2d(16)
         self.layer1 = self._make_layer(block, 4, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, 8, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(block, 16, num_blocks[2], stride=2)
-        self.linear = nn.Linear(64, num_classes)
+        self.layer2 = self._make_layer(block, 16, num_blocks[1], stride=2)
+        self.layer3 = self._make_layer(block, 32, num_blocks[2], stride=2)
+        self.linear = nn.Linear(128, num_classes)
 
         self.apply(_weights_init)
 
@@ -107,7 +107,7 @@ class ResNet(nn.Module):
         strides = [stride] + [1] * (num_blocks - 1)
         layers = []
         for stride in strides:
-            layers.append(block(self.in_planes, planes, stride))
+            layers.append(block(self.in_planes, planes, stride, option='C'))
             self.in_planes = planes * block.expansion * 4
 
         return nn.Sequential(*layers)
