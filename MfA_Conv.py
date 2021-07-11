@@ -185,14 +185,14 @@ class MfA_Conv(nn.Module):
         out_Vert_h = self.Vert_high_conv(x_Vert_h)
 
         x_Horn_l = torch.cat([x[:, self.in_channel//4:self.in_channel//2, :, :], x[:, self.in_channel//2:self.in_channel*3//4, :, :]], 1)
-        x_Horn_l = self.downsample(x_Horn_l)
+        # x_Horn_l = self.downsample(x_Horn_l)
         out_Horn_l = self.Hori_low_conv(x_Horn_l)
-        out_Horn_l = F.interpolate(out_Horn_l, scale_factor=2)
+        # out_Horn_l = F.interpolate(out_Horn_l, scale_factor=2)
 
         x_Vert_l = torch.cat([x[:, self.in_channel//4:self.in_channel//2, :, :], x[:, self.in_channel*3//4:self.in_channel*4//4, :, :]], 1)
-        x_Vert_l = self.downsample(x_Vert_l)
+        # x_Vert_l = self.downsample(x_Vert_l)
         out_Vert_l = self.Vert_low_conv(x_Vert_l)
-        out_Vert_l = F.interpolate(out_Vert_l, scale_factor=2)
+        # out_Vert_l = F.interpolate(out_Vert_l, scale_factor=2)
 
         # self.weight_hh.data = F.softmax(self.weight_hh, dim=0)
         # out_hh = self.weight_hh[0] * out_Vert_h + self.weight_hh[1] * out_Horn_h
