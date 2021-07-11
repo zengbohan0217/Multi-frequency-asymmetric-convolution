@@ -21,38 +21,62 @@ class BasicBlock(nn.Module):
     expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, norm_layer=None):
+                 base_width=64, norm_layer=None, first=False):
         super(BasicBlock, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
             raise ValueError('BasicBlock only supports groups=1 and base_width=64')
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.first = first
+        # self.conv1 = conv3x3(inplanes, planes, stride)
+        if first:
+            self.ocb1 = FirstOctaveCBR(inplanes, planes, kernel_size=(3, 3), norm_layer=norm_layer, stride=stride)
+        else:
+            self.ocb1 = OctaveCBR(inplanes, planes, kernel_size=(3, 3), norm_layer=norm_layer, stride=stride)
         self.bn1 = norm_layer(planes)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(planes, planes)
+        # self.conv2 = conv3x3(planes, planes)
+        self.ocb2 = OctaveCBR(planes, planes, kernel_size=(3, 3), norm_layer=norm_layer)
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
 
     def forward(self, x):
-        identity = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
+        # identity = x
+        #
+        # out = self.conv1(x)
+        # out = self.bn1(out)
+        # out = self.relu(out)
+        #
+        # out = self.conv2(out)
+        # out = self.bn2(out)
+        #
+        # if self.downsample is not None:
+        #     identity = self.downsample(x)
+        #
+        # out += identity
+        # out = self.relu(out)
+        if self.first:
+            x_h_res, x_l_res = self.ocb1(x)
+            x_h, x_l = self.ocb2((x_h_res, x_l_res))
+        else:
+            x_h_res, x_l_res = x
+            x_h, x_l = self.ocb1((x_h_res,x_l_res))
+            # print(x_h.size(), x_l.size())
+            x_h, x_l = self.ocb2((x_h, x_l))
 
         if self.downsample is not None:
-            identity = self.downsample(x)
+            x_h_res, x_l_res = self.downsample((x_h_res,x_l_res))
 
-        out += identity
-        out = self.relu(out)
+        # print(x_h.size(), x_h_res.size())
+        x_h += x_h_res
+        x_l += x_l_res
 
-        return out
+        x_h = self.relu(x_h)
+        x_l = self.relu(x_l)
+
+        return x_h, x_l
 
 
 class Bottleneck(nn.Module):
@@ -103,7 +127,8 @@ class Bottleneck(nn.Module):
 
 
 class BottleneckLast(nn.Module):
-    expansion = 4
+    # expansion = 4
+    expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, norm_layer=None):
@@ -137,7 +162,8 @@ class BottleneckLast(nn.Module):
 
 
 class BottleneckOrigin(nn.Module):
-    expansion = 4
+    # expansion = 4
+    expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, norm_layer=None):
@@ -190,7 +216,7 @@ class OCtaveResNet(nn.Module):
         self.inplanes = 64
         self.groups = groups
         self.base_width = width_per_group
-        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3,
+        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=1, padding=3,
                                bias=False)
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
@@ -198,7 +224,7 @@ class OCtaveResNet(nn.Module):
 
         self.layer1 = self._make_layer(block, 64, layers[0], norm_layer=norm_layer, First=True)
         # self.layer2 = self._make_layer(block, 128, layers[1], stride=2, norm_layer=norm_layer)
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=1, norm_layer=norm_layer)
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2, norm_layer=norm_layer)
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2, norm_layer=norm_layer)
         self.layer4 = self._make_last_layer(block, 512, layers[3], stride=2, norm_layer=norm_layer)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
@@ -279,7 +305,7 @@ class OCtaveResNet(nn.Module):
         return x
 
 def Octresnet20(pretrained=False, **kwargs):
-    model = OCtaveResNet(Bottleneck, [1, 2, 2, 1], num_classes=10, **kwargs)
+    model = OCtaveResNet(BasicBlock, [2, 2, 2, 2], num_classes=10, **kwargs)
     return model
 
 
