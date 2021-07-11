@@ -29,6 +29,7 @@ class MfA_Conv_start(nn.Module):
         self.low_stride = low_stride
         self.basic_stride = basic_stride
         self.padding_hl, self.padding_hs, self.padding_ll, self.padding_ls = self.count_padding()
+        self.downsample = nn.AvgPool2d(kernel_size=(2, 2), stride=2)
 
         # 改进思路 不用全部in_channel用来卷，可以份一半，一半用来分析高频，一半用来分析低频
         self.Hori_high_conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=(high_S, high_L),
@@ -81,10 +82,13 @@ class MfA_Conv_start(nn.Module):
 
 
     def forward(self, x):
+        x_1 = self.downsample(x)
         out_Horn_h = self.Hori_high_conv(x)
         out_Vert_h = self.Vert_high_conv(x)
-        out_Horn_l = self.Hori_low_conv(x)
-        out_Vert_l = self.Vert_low_conv(x)
+        out_Horn_l = self.Hori_low_conv(x_1)
+        out_Horn_l = F.interpolate(out_Horn_l, scale_factor=2)
+        out_Vert_l = self.Vert_low_conv(x_1)
+        out_Vert_l = F.interpolate(out_Vert_l, scale_factor=2)
         # self.weight_hh.data = F.softmax(self.weight_hh, dim=0)
         # out_hh = self.weight_hh[0] * out_Vert_h + self.weight_hh[1] * out_Horn_h
         # self.weight_ll.data = F.softmax(self.weight_ll, dim=0)
@@ -131,6 +135,7 @@ class MfA_Conv(nn.Module):
         self.low_stride = low_stride
         self.basic_stride = basic_stride
         self.padding_hl, self.padding_hs, self.padding_ll, self.padding_ls = self.count_padding()
+        self.downsample = nn.AvgPool2d(kernel_size=(2, 2), stride=2)
 
         # 改进思路 不用全部in_channel用来卷，可以份一半，一半用来分析高频，一半用来分析低频
         self.Hori_high_conv = nn.Conv2d(in_channels=in_channels//2, out_channels=out_channels, kernel_size=(high_S, high_L),
@@ -175,12 +180,20 @@ class MfA_Conv(nn.Module):
     def forward(self, x):
         x_Horn_h = torch.cat([x[:, 0:self.in_channel//4, :, :], x[:, self.in_channel*3//4:self.in_channel*4//4, :, :]], 1)
         out_Horn_h = self.Hori_high_conv(x_Horn_h)
+
         x_Vert_h = torch.cat([x[:, 0:self.in_channel//4, :, :], x[:, self.in_channel//2:self.in_channel*3//4, :, :]], 1)
         out_Vert_h = self.Vert_high_conv(x_Vert_h)
+
         x_Horn_l = torch.cat([x[:, self.in_channel//4:self.in_channel//2, :, :], x[:, self.in_channel//2:self.in_channel*3//4, :, :]], 1)
+        x_Horn_l = self.downsample(x_Horn_l)
         out_Horn_l = self.Hori_low_conv(x_Horn_l)
+        out_Horn_l = F.interpolate(out_Horn_l, scale_factor=2)
+
         x_Vert_l = torch.cat([x[:, self.in_channel//4:self.in_channel//2, :, :], x[:, self.in_channel*3//4:self.in_channel*4//4, :, :]], 1)
+        x_Vert_l = self.downsample(x_Vert_l)
         out_Vert_l = self.Vert_low_conv(x_Vert_l)
+        out_Vert_l = F.interpolate(out_Vert_l, scale_factor=2)
+
         # self.weight_hh.data = F.softmax(self.weight_hh, dim=0)
         # out_hh = self.weight_hh[0] * out_Vert_h + self.weight_hh[1] * out_Horn_h
         # self.weight_ll.data = F.softmax(self.weight_ll, dim=0)
