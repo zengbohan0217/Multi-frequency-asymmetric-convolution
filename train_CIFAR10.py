@@ -15,6 +15,7 @@ import MfA_ResNet_18_reduce as Res_18_down
 import ResNet_slim as Res_slim
 import MfA_ResNet_slim as MfA_Res_slim
 import oct_resnet as octR
+import MfA_ResNet_ori_slim as MfA_res_ori_slim
 
 import os
 import argparse
@@ -101,9 +102,11 @@ print('==> Building model..')
 # net = RegNetX_200MF()
 # net = SimpleDLA()
 # net = Res_.resnet18_cifar()
-net = Res_slim.resnet20()
+# net = Res_slim.resnet20()
+# net = octR.Octresnet50()
 # net = MfA_Res_slim.resnet20()
 # net = octR.Octresnet20()
+net = MfA_res_ori_slim.ResNet50_slim()
 
 logger.info(net)
 
@@ -121,7 +124,8 @@ if args.resume:
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
 
-criterion = nn.CrossEntropyLoss()
+# criterion = nn.CrossEntropyLoss()
+criterion = nn.NLLLoss()
 optimizer = optim.SGD(net.parameters(), lr=args.lr,
                       momentum=0.9, weight_decay=5e-4)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)

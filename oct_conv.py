@@ -17,7 +17,7 @@ class OctaveConv(nn.Module):
         if bias:
             self.bias = nn.Parameter(torch.Tensor(out_channels))
         else:
-            self.bias = torch.zeros(out_channels).cuda()
+            self.bias = torch.zeros(out_channels)
         self.up_kwargs = up_kwargs
         self.h2g_pool = nn.AvgPool2d(kernel_size=(2,2), stride=2)
 
@@ -70,7 +70,7 @@ class FirstOctaveConv(nn.Module):
         if bias:
             self.bias = nn.Parameter(torch.Tensor(out_channels))
         else:
-            self.bias = torch.zeros(out_channels).cuda()
+            self.bias = torch.zeros(out_channels)
         self.up_kwargs = up_kwargs
         self.h2g_pool = nn.AvgPool2d(kernel_size=(2,2), stride=2)
 
@@ -114,7 +114,7 @@ class LastOctaveConv(nn.Module):
         if bias:
             self.bias = nn.Parameter(torch.Tensor(out_channels))
         else:
-            self.bias = torch.zeros(out_channels).cuda()
+            self.bias = torch.zeros(out_channels)
         self.up_kwargs = up_kwargs
         self.h2g_pool = nn.AvgPool2d(kernel_size=(2,2), stride=2)
 

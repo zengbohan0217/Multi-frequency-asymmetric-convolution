@@ -37,7 +37,7 @@ class BasicBlock(nn.Module):
         self.bn1 = norm_layer(planes)
         self.relu = nn.ReLU(inplace=True)
         # self.conv2 = conv3x3(planes, planes)
-        self.ocb2 = OctaveCBR(planes, planes, kernel_size=(3, 3), norm_layer=norm_layer)
+        self.ocb2 = OctaveCB(planes, planes, kernel_size=(3, 3), norm_layer=norm_layer)
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
@@ -213,7 +213,7 @@ class OCtaveResNet(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 
-        self.inplanes = 64
+        self.inplanes = 16
         self.groups = groups
         self.base_width = width_per_group
         self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=1, padding=3,
@@ -222,13 +222,12 @@ class OCtaveResNet(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layer1 = self._make_layer(block, 64, layers[0], norm_layer=norm_layer, First=True)
-        # self.layer2 = self._make_layer(block, 128, layers[1], stride=2, norm_layer=norm_layer)
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2, norm_layer=norm_layer)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2, norm_layer=norm_layer)
-        self.layer4 = self._make_last_layer(block, 512, layers[3], stride=2, norm_layer=norm_layer)
+        self.layer1 = self._make_layer(block, 16, layers[0], norm_layer=norm_layer, First=True)
+        self.layer2 = self._make_layer(block, 32, layers[1], stride=2, norm_layer=norm_layer)
+        self.layer3 = self._make_layer(block, 64, layers[2], stride=2, norm_layer=norm_layer)
+        self.layer4 = self._make_last_layer(block, 128, layers[3], stride=2, norm_layer=norm_layer)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.fc = nn.Linear(128 * block.expansion, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -309,12 +308,12 @@ def Octresnet20(pretrained=False, **kwargs):
     return model
 
 
-def Octresnet50(pretrained=False, **kwargs):
+def Octresnet50(pretrained=False, num_class=1000, **kwargs):
     """Constructs a ResNet-50 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = OCtaveResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    model = OCtaveResNet(Bottleneck, [3, 4, 6, 3], num_classes=num_class, **kwargs)
     return model
 
 
