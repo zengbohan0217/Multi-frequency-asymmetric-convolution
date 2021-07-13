@@ -71,12 +71,12 @@ class MfA_Conv_start(nn.Module):
     def feature_map_add(self, weight_1, weight_2, feature_map_1, feature_map_2):
         up_1_size = self.out_channel // 3
         up_2_size = up_1_size + self.out_channel // 3
-        up_1_feature = weight_1 * 0.75 * feature_map_1[:, 0:up_1_size+1, :, :] + \
-                       weight_2 * 0.25 * feature_map_2[:, 0:up_1_size+1, :, :]
-        up_2_feature = weight_1 * 0.25 * feature_map_1[:, up_1_size+1:up_2_size+1, :, :] + \
-                       weight_2 * 0.75 * feature_map_2[:, up_1_size+1:up_2_size+1, :, :]
-        equal_feature = weight_1 * 0.5 * feature_map_1[:, up_2_size+1:self.out_channel+1, :, :] + \
-                       weight_2 * 0.5 * feature_map_2[:, up_2_size+1:self.out_channel+1, :, :]
+        up_1_feature = weight_1 * 0.75 * feature_map_1[:, 0:up_1_size, :, :] + \
+                       weight_2 * 0.25 * feature_map_2[:, 0:up_1_size, :, :]
+        up_2_feature = weight_1 * 0.25 * feature_map_1[:, up_1_size:up_2_size, :, :] + \
+                       weight_2 * 0.75 * feature_map_2[:, up_1_size:up_2_size, :, :]
+        equal_feature = weight_1 * 0.5 * feature_map_1[:, up_2_size:self.out_channel, :, :] + \
+                        weight_2 * 0.5 * feature_map_2[:, up_2_size:self.out_channel, :, :]
         final_out = torch.cat([up_1_feature, up_2_feature, equal_feature], 1)
         return final_out
 

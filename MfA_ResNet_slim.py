@@ -97,7 +97,7 @@ class ResNet(nn.Module):
         self.conv1 = MfA_Conv_start(3, 4, high_L=1, high_S=1, low_L=3, low_S=3)
         self.bn1 = nn.BatchNorm2d(16)
         self.layer1 = self._make_layer(block, 4, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, 16, num_blocks[1], stride=2)
+        self.layer2 = self._make_layer(block, 8, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 32, num_blocks[2], stride=2)
         self.linear = nn.Linear(128, num_classes)
 
