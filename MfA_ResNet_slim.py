@@ -70,13 +70,13 @@ class BasicBlock(nn.Module):
                                             F.pad(x[:, :, ::2, ::2], (0, 0, 0, 0, planes, planes), "constant", 0))
             elif option == 'B':
                 self.shortcut = nn.Sequential(
-                    nn.Conv2d(in_planes, self.expansion * planes * 4, kernel_size=1, stride=stride, bias=False),
-                    nn.BatchNorm2d(self.expansion * planes * 4)
+                    nn.Conv2d(in_planes, self.expansion * planes, kernel_size=1, stride=stride, bias=False),
+                    nn.BatchNorm2d(self.expansion * planes)
                 )
             elif option == 'C':
                 self.shortcut = nn.Sequential(
-                    MfA_Conv(in_planes, planes, high_stride=stride, low_stride=stride, basic_stride=stride),
-                    nn.BatchNorm2d(planes * 4)
+                    MfA_Conv(in_planes, self.expansion * planes * 4, high_stride=stride, low_stride=stride, basic_stride=stride),
+                    nn.BatchNorm2d(self.expansion * planes * 4)
                 )
 
     def forward(self, x):

@@ -82,13 +82,13 @@ class MfA_Conv_start(nn.Module):
 
 
     def forward(self, x):
-        x_1 = self.downsample(x)
+        # x_1 = self.downsample(x)
         out_Horn_h = self.Hori_high_conv(x)
         out_Vert_h = self.Vert_high_conv(x)
-        out_Horn_l = self.Hori_low_conv(x_1)
-        out_Horn_l = F.interpolate(out_Horn_l, scale_factor=2)
-        out_Vert_l = self.Vert_low_conv(x_1)
-        out_Vert_l = F.interpolate(out_Vert_l, scale_factor=2)
+        out_Horn_l = self.Hori_low_conv(x)
+        # out_Horn_l = F.interpolate(out_Horn_l, scale_factor=2)
+        out_Vert_l = self.Vert_low_conv(x)
+        # out_Vert_l = F.interpolate(out_Vert_l, scale_factor=2)
         # self.weight_hh.data = F.softmax(self.weight_hh, dim=0)
         # out_hh = self.weight_hh[0] * out_Vert_h + self.weight_hh[1] * out_Horn_h
         # self.weight_ll.data = F.softmax(self.weight_ll, dim=0)
