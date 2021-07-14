@@ -67,8 +67,8 @@ class Bottleneck(nn.Module):
         self.conv2 = MfA_Conv.MfA_Conv(planes * 4, planes, high_L=3, high_S=1, low_L=3, low_S=3,
                                        high_stride=stride, low_stride=stride, basic_stride=stride)
         self.bn2 = nn.BatchNorm2d(planes * 4)
-        self.conv3 = MfA_Conv.MfA_Conv(planes * 4, planes, high_L=1, high_S=1, low_L=3, low_S=3)
-        self.bn3 = nn.BatchNorm2d(planes * 4)
+        self.conv3 = MfA_Conv.MfA_Conv(planes * 4, planes*self.expansion, high_L=1, high_S=1, low_L=3, low_S=3)
+        self.bn3 = nn.BatchNorm2d(planes * 4*self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
