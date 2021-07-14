@@ -16,6 +16,9 @@ import ResNet_slim as Res_slim
 import MfA_ResNet_slim as MfA_Res_slim
 import oct_resnet as octR
 import MfA_ResNet_ori_slim as MfA_res_ori_slim
+import MfA_ResNet_Beta_slim_ori as MfA_res_ori_Beta
+import ResNet_ori_slim as Res_slim_ori
+
 
 import os
 import argparse
@@ -106,7 +109,9 @@ print('==> Building model..')
 # net = octR.Octresnet50()
 # net = MfA_Res_slim.resnet20()
 # net = octR.Octresnet20()
-net = MfA_res_ori_slim.ResNet50_slim()
+# net = MfA_res_ori_slim.ResNet50_slim()
+# net = MfA_res_ori_Beta.ResNet18_slim()
+net = Res_slim_ori.ResNet18_slim()
 
 logger.info(net)
 

@@ -75,13 +75,13 @@ class MfA_conv(nn.Module):
         # 这个模块使用时in_channels应该刚好是out_channels
         self.in_channel = in_channels
         self.out_channel = out_channels
-        self.Hori_high_conv = nn.Conv2d(in_channels=in_channels//2, out_channels=out_channels//2, kernel_size=(high_S, high_L),
+        self.Hori_high_conv = nn.Conv2d(in_channels=in_channels//4, out_channels=out_channels//2, kernel_size=(high_S, high_L),
                                         stride=stride, padding=(high_S // 2, high_L // 2))
-        self.Vert_high_conv = nn.Conv2d(in_channels=in_channels//2, out_channels=out_channels//2, kernel_size=(high_L, high_S),
+        self.Vert_high_conv = nn.Conv2d(in_channels=in_channels//4, out_channels=out_channels//2, kernel_size=(high_L, high_S),
                                         stride=stride, padding=(high_L // 2, high_S // 2))
-        self.Hori_low_conv = nn.Conv2d(in_channels=in_channels//2, out_channels=out_channels//2, kernel_size=(low_S, low_L),
+        self.Hori_low_conv = nn.Conv2d(in_channels=in_channels//4, out_channels=out_channels//2, kernel_size=(low_S, low_L),
                                        stride=stride, padding=(low_S // 2, low_L // 2))
-        self.Vert_low_conv = nn.Conv2d(in_channels=in_channels//2, out_channels=out_channels//2, kernel_size=(low_L, low_S),
+        self.Vert_low_conv = nn.Conv2d(in_channels=in_channels//4, out_channels=out_channels//2, kernel_size=(low_L, low_S),
                                        stride=stride, padding=(low_L // 2, low_S // 2))
 
     def forward(self, x):
